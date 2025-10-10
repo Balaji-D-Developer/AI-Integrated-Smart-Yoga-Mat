@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card p-4 shadow-sm mb-4 text-center">
+      <h2 class="card-title mb-4">Today's Summary</h2>
+      <ul class="list-group list-group-flush mb-4">
+        <li class="list-group-item fs-5"><strong>Total Poses:</strong> {{ total }}</li>
+        <li class="list-group-item fs-5"><strong>Correct Poses:</strong> <span class="text-success">{{ correct }}</span></li>
+        <li class="list-group-item fs-5"><strong>Wrong Poses:</strong> <span class="text-danger">{{ wrong }}</span></li>
+        <li class="list-group-item fs-5"><strong>Calories Burnt (est.):</strong> {{ calories }} kcal</li>
+        <li class="list-group-item fs-5"><strong>Diet Plan:</strong> {{ diet }}</li>
+      </ul>
+      <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">Start Over</a>
+    </div>
+
+    {% if next_day_poses %}
+    <div class="text-center mt-5">
+      <h3 class="mb-4">Next Day's Poses</h3>
+      <div class="row">
+        {% for p in next_day_poses %}
+        <div class="col-md-4 mb-4">
+          <div class="card shadow-sm h-100">
+            <img
+              src="{{ url_for('static', filename='poses/' + p.lower() + '.png') }}"
+              class="card-img-top"
+              alt="{{ p|replace('_', ' ')|title }}"
+              style="object-fit: cover; height: 200px;"
+            >
+            <div class="card-body">
+              <h5 class="card-title">{{ p|replace('_', ' ')|title }}</h5>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

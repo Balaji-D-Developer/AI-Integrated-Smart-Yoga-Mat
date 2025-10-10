@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row pose-container">
+  <div class="col-lg-6 d-flex flex-column align-items-center">
+    <h3 class="mb-3">{{ pose|replace('_', ' ')|title }}</h3>
+    <img src="{{ reference_image }}"
+         class="img-fluid mb-3 rounded shadow-sm"
+         alt="Reference Pose">
+    <div class="text-center mb-3">
+      <h4>Instructions</h4>
+      <p>Hold the <strong>{{ pose|replace('_', ' ')|title }}</strong> pose for 60 seconds.</p>
+      <ul class="list-unstyled">
+        <li><span class="text-success fw-bold">Green Angles:</span> Within range</li>
+        <li><span class="text-danger fw-bold">Red Angles:</span> Out of range</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="col-lg-6 text-center">
+    <div class="timer mb-3">
+      Time Left: <span id="timer">60</span>s
+    </div>
+    <div class="border rounded overflow-hidden shadow-sm">
+      <img id="frame"
+           src="{{ url_for('video_feed') }}"
+           class="img-fluid"
+           alt="Live Feed">
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // start countdown immediately
+  let timeLeft = 60;
+  const timerEl = document.getElementById('timer');
+
+  const countdown = setInterval(() => {
+    timeLeft--;
+    timerEl.innerText = timeLeft;
+    if (timeLeft <= 0) {
+      clearInterval(countdown);
+      // Disable video feed to show final frame
+      document.getElementById('frame').src = ""; 
+
+      fetch("{{ url_for('pose_complete') }}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(res => res.json())
+      .then(data => {
+        const msg = data.correct
+          ? 'Pose done correctly'
+          : 'Pose done wrongly. Let\'s try again next time.';
+        
+        // Use browser's speech synthesis for audio feedback
+        window.speechSynthesis.speak(new SpeechSynthesisUtterance(msg));
+        
+        // Wait for speech to finish before redirecting
+        setTimeout(() => {
+          window.location.href = data.next_url;
+        }, 2000);
+      });
+    }
+  }, 1000);
+</script>
+{% endblock %}

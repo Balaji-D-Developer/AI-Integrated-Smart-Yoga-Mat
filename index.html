@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="text-center">
+  <h1>Day {{ day_count }} Yoga Session</h1>
+  <button id="startBtn" class="btn btn-lg btn-primary btn-start mt-4">Start Yoga</button>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+// Start session, then redirect to pose page
+document.getElementById('startBtn').onclick = () => {
+  fetch('/start_yoga', { method:'POST' })
+    .then(() => window.location.href = '/pose');
+};
+</script>
+{% endblock %}
+```### templates/pose.html
+```html
+{% extends 'base.html' %}
+{% block content %}
+<div class="row gy-4">
+  <div class="col-md-4 text-center">
+    <h3 id="poseName" class="mb-3"></h3>
+    <img id="refImg" src="" class="img-fluid rounded shadow" alt="Reference">    
+  </div>
+  <div class="col-md-8 position-relative">
+    <div class="border rounded overflow-hidden" style="height:calc(100vh - 100px)">  
+      <img id="videoFeed" src="/video_feed" class="w-100 h-100 object-fit-cover" alt="Live">    
+    </div>
+    <div class="position-absolute bottom-0 start-0 w-100 bg-light p-3 d-flex justify-content-center">
+      <div>Instructions: Hold the pose for 60s. Green means good, red means adjust.</div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script>
+// Poll backend for pose info
+async function loadPose() {
+  const resp = await fetch('/pose_info');
+  const info = await resp.json();
+  if (!info.active) {
+    window.location.href = '/summary';
+    return;
+  }
+  document.getElementById('poseName').innerText = info.pose;
+  document.getElementById('refImg').src = info.image;
+}
+loadPose();
+setInterval(loadPose, 1000);
+</script>{% endblock %}
